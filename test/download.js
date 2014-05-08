@@ -76,12 +76,28 @@ vows.describe('download').addBatch({
   },
   'a video from vimeo': {
     topic: function() {
-      var args = [];
-      var dl = ytdl(video3, args, { cwd: __dirname });
+      var dl = ytdl(video3, []);
       var cb = this.callback;
+
       dl.on('error', cb);
-      dl.on('end', cb);
-      dl.resume();
+
+      dl.on('info', function(info) {
+        var pos = 0;
+        var progress;
+
+        dl.on('data', function(data) {
+          pos += data.length;
+          progress = pos / info.size;
+        });
+
+        dl.on('end', function() {
+          cb(null, progress, info);
+        });
+
+        var filepath = path.join(__dirname, info.filename);
+        dl.pipe(fs.createWriteStream(filepath));
+      });
+
     },
 
     'data returned': function(err, progress, data) {
@@ -109,3 +125,8 @@ vows.describe('download').addBatch({
     }
   }
 }).export(module);
+
+// Show the error when vows test fails ailently.
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err.stack);
+});
