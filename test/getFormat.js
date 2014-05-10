@@ -1,8 +1,8 @@
 var vows   = require('vows');
 var ytdl   = require('..');
 var assert = require('assert');
-var video  = 'http://www.youtube.com/watch?v=0k2Zzkw_-0I';
-
+var video1 = 'http://www.youtube.com/watch?v=0k2Zzkw_-0I';
+var video2 = 'http://vimeo.com/4992356';
 
 var expected = [
   { id: '0k2Zzkw_-0I', itag: 171, filetype: 'webm', resolution: 'audio only' },
@@ -17,7 +17,18 @@ var expected = [
 vows.describe('getFormats').addBatch({
   'from a video': {
     'topic': function() {
-      ytdl.getFormats(video, this.callback);
+      ytdl.getFormats(video1, this.callback);
+    },
+
+    'formats returned': function(err, formats) {
+      assert.isNull(err);
+      assert.isArray(formats);
+      assert.deepEqual(formats, expected);
+    }
+  },
+  'from vimeo': {
+    'topic': function() {
+      ytdl.getFormats(video2, this.callback);
     },
 
     'formats returned': function(err, formats) {
